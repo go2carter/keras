@@ -209,6 +209,50 @@ def apply_transform(x,
     x = np.rollaxis(x, 0, channel_axis + 1)
     return x
 
+def apply_rotation_transform(x,
+                    transform_matrix,
+                    channel_axis=0,
+                    fill_mode='nearest',
+                    cval=(0.,0.,0.)):
+    """Apply the image transformation specified by a matrix.
+
+    # Arguments
+        x: 2D numpy array, single image.
+        transform_matrix: Numpy array specifying the geometric transformation.
+        channel_axis: Index of axis for channels in the input tensor.
+        fill_mode: Points outside the boundaries of the input
+            are filled according to the given mode
+            (one of `{'constant', 'nearest', 'reflect', 'wrap'}`).
+        cval: Value used for points outside the boundaries
+            of the input if `mode='constant'`.
+
+    # Returns
+        The transformed version of the input.
+    """
+    x = np.rollaxis(x, channel_axis, 0)
+    final_affine_matrix = transform_matrix[:2, :2]
+    final_offset = transform_matrix[:2, 2]
+#    print('x[0]: {}'.format(x[0]))
+#    print('x[1]: {}'.format(x[1]))
+#    print('x[2]: {}'.format(x[2]))
+#    x_channel_num = 0
+#    for x_channel in x:
+#        print('At x_channel_num = {}'.format(x_channel_num))
+#        print('Type of x_channel: {}'.format(type(x_channel)))
+#        print('Value of x_channel: {}'.format(x_channel))
+#        x_channel_num += 1
+    channel_images = [ndi.interpolation.affine_transform(
+        x[x_num],
+        final_affine_matrix,
+        final_offset,
+        order=0,
+        mode=fill_mode,
+        cval=cval[x_num]) for x_num in [0,1,2]]
+    x = np.stack(channel_images, axis=0)
+    x = np.rollaxis(x, 0, channel_axis + 1)
+    return x
+
+
 
 def flip_axis(x, axis):
     x = np.asarray(x).swapaxes(axis, 0)
