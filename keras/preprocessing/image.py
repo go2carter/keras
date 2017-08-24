@@ -25,7 +25,7 @@ except ImportError:
 
 
 def random_rotation(x, rg, row_axis=1, col_axis=2, channel_axis=0,
-                    fill_mode='nearest', cval=0.):
+                    fill_mode='nearest', cval=(0., 0., 0.)):
     """Performs a random rotation of a Numpy image tensor.
 
     # Arguments
@@ -50,8 +50,8 @@ def random_rotation(x, rg, row_axis=1, col_axis=2, channel_axis=0,
 
     h, w = x.shape[row_axis], x.shape[col_axis]
     transform_matrix = transform_matrix_offset_center(rotation_matrix, h, w)
-    x = apply_transform(x, transform_matrix, channel_axis, fill_mode, cval)
-    return x
+    x = apply_rotation_transform(x, transform_matrix, channel_axis, fill_mode, cval)
+    return x, theta
 
 
 def random_shift(x, wrg, hrg, row_axis=1, col_axis=2, channel_axis=0,
@@ -644,7 +644,7 @@ class ImageDataGenerator(object):
         if transform_matrix is not None:
             h, w = x.shape[img_row_axis], x.shape[img_col_axis]
             transform_matrix = transform_matrix_offset_center(transform_matrix, h, w)
-            x = apply_transform(x, transform_matrix, img_channel_axis,
+            x = apply_rotation_transform(x, transform_matrix, img_channel_axis,
                                 fill_mode=self.fill_mode, cval=self.cval)
 
         if self.channel_shift_range != 0:
